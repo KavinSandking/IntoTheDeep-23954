@@ -20,11 +20,11 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.sun.tools.javac.comp.Todo;
 
-import java.util.function.ToDoubleBiFunction;
+
 
 @Config
 @Autonomous(name = "LM3AUTONBLUE", group = "Autonomous")
@@ -37,6 +37,9 @@ public class Auton extends LinearOpMode {
         public Slides(HardwareMap hardwareMap) {
             Slides = hardwareMap.get(DcMotorEx.class, "Slides");
             Slides2 = hardwareMap.get(DcMotorEx.class, "Slides2");
+
+            Slides.setDirection(DcMotorSimple.Direction.REVERSE);
+            Slides2.setDirection(DcMotorSimple.Direction.REVERSE);
             Slides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             Slides2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -50,8 +53,9 @@ public class Auton extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    Slides.setTargetPosition(-3900);
-                    Slides2.setTargetPosition(-3900);
+
+                    Slides.setTargetPosition(4200);
+                    Slides2.setTargetPosition(4200);
 
                     Slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     Slides2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -87,14 +91,14 @@ public class Auton extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    Slides.setTargetPosition(-100);
-                    Slides2.setTargetPosition(-100);
+                    Slides.setTargetPosition(10);
+                    Slides2.setTargetPosition(10);
 
                     Slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     Slides2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                    Slides.setPower(0.8);
-                    Slides2.setPower(0.8);
+                    Slides.setPower(1.0);
+                    Slides2.setPower(1.0);
 
                     initialized = true;
                 }
@@ -134,7 +138,7 @@ public class Auton extends LinearOpMode {
             packet.put("Hold Time (ms)", elapsedTime);
 
             // Run for 1 second (or adjust as needed for claw to open)
-            return elapsedTime < 2000;
+            return elapsedTime < 500;
         }
     }
 
@@ -282,13 +286,34 @@ public class Auton extends LinearOpMode {
         TrajectoryActionBuilder GOBACK = Sample1.endTrajectory().fresh()
                 .lineToX(11.541);
         TrajectoryActionBuilder Sample2 = GOBACK.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(22.41, 18.0), Math.toRadians(-2.59));
+                .strafeToLinearHeading(new Vector2d(24.14, 19.82), Math.toRadians(-5.61));
         TrajectoryActionBuilder Wait = GOBACK.endTrajectory().fresh()
                 .waitSeconds(2.0);
         TrajectoryActionBuilder DROP2 = Sample2.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(14.91, 16.74), Math.toRadians(129.49));
+                .strafeToLinearHeading(new Vector2d(10.01, 18.55), Math.toRadians(129.53));
         TrajectoryActionBuilder MOVEFORWARD = DROP2.endTrajectory().fresh()
                 .strafeToLinearHeading(new Vector2d(8.17, 24.46), Math.toRadians(130.17));
+        TrajectoryActionBuilder GOBACK2 = DROP2.endTrajectory().fresh()
+                .lineToX(11.541);
+        TrajectoryActionBuilder Sample3 = GOBACK2.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(24.49, 28.81), Math.toRadians(-7.09));
+        TrajectoryActionBuilder DROP3 = Sample3.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(10.01, 18.55), Math.toRadians(129.53));
+        TrajectoryActionBuilder MOVEFORWARD3 = DROP3.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(8.17, 24.46), Math.toRadians(130.17));
+        TrajectoryActionBuilder GOBACK3 = MOVEFORWARD3.endTrajectory().fresh()
+                .lineToX(11.541);
+        TrajectoryActionBuilder Sample4 = GOBACK3.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(26.46, 27.38), Math.toRadians(34.31));
+        TrajectoryActionBuilder DROP4 = Sample4.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(10.01, 18.55), Math.toRadians(129.53));
+        TrajectoryActionBuilder MOVEFORWARD4 = DROP4.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(8.17, 24.46), Math.toRadians(130.17));
+        TrajectoryActionBuilder GOBACK4 = MOVEFORWARD3.endTrajectory().fresh()
+                .lineToX(11.541);
+
+
+
         //TODO Set up Velocity Constraints for certain trajectories
         //TrajectoryActionBuilder Velocity Constraints = Poop.endTrajectory().fresh()
                 //.splineTo(new Vector2d(69.0,69.0),Math.toRadians(69.0), new TranslationalVelConstraint(20.0));
@@ -300,44 +325,105 @@ public class Auton extends LinearOpMode {
         Action WAIT = Wait.build();
         Action Drop2 = DROP2.build();
         Action MoveForward = MOVEFORWARD.build();
+        Action goBack2 = GOBACK2.build();
+        Action Sample_3 = Sample3.build();
+        Action Drop3 = DROP3.build();
+        Action MoveForward3 = MOVEFORWARD3.build();
+        Action goBack3 = GOBACK3.build();
+        Action Sample_4  = Sample4.build();
+        Action Drop4 = DROP4.build();
+        Action goBack4 = GOBACK4.build();
+        Action MoveForward4 = MOVEFORWARD4.build();
 
         waitForStart();
 
         Actions.runBlocking(
                 new SequentialAction(
-                        Sample_1,
-                        Slides.slidesUp(),
+                        new ParallelAction(
+                                Sample_1,
+                                Slides.slidesUp()
+
+                        ),
+
                         elbow.elbowUp(),
                         new ParallelAction(
                                 Slides.holdSlides(),
                                 elbow.elbowUp()
                         ),
+
                         claw.openClaw(),
                         goBack,
-                        Slides.slidesDown(),
-                        Sample_2,
+                        new ParallelAction(
+                                Slides.slidesDown(),
+                                Sample_2
+                        ),
                         WAIT,
                         new ParallelAction(
                                 elbow.lowerElbow(),
                                 claw.openClaw()
                         ),
-                        WAIT,
+
                         claw.closeClaw(),
                         elbow.elbowUp(),
-                        Drop2,
-                        claw.closeClaw(),
-                        Slides.slidesUp(),
-                        elbow.elbowUp(),
-                        MoveForward,
+                        new SequentialAction(
+                                Drop2,
+                                Slides.slidesUp(),
+                                MoveForward,
+                                claw.closeClaw()
+                        ),
+
+                        //elbow.elbowUp(),
                         new ParallelAction(
                                 Slides.holdSlides(),
-                                elbow.elbowUp()
+                                elbow.elbowUp(),
+                                claw.openClaw()
+                        ),
+                        goBack2,
+                        new ParallelAction(
+                                Slides.slidesDown(),
+                                Sample_3
                         ),
                         new SequentialAction(
+                                elbow.lowerElbow(),
                                 claw.openClaw(),
-                                goBack,
-                                Slides.slidesDown()
-                        )));
+                                claw.closeClaw(),
+                                elbow.elbowUp(),
+                                Drop3,
+                                Slides.slidesUp(),
+                                MoveForward3,
+                                claw.closeClaw()
+                        ),
+                        new ParallelAction(
+                                Slides.holdSlides(),
+                                elbow.elbowUp(),
+                                claw.openClaw()
+                        ),
+                        goBack3,
+                        new ParallelAction(
+                                Slides.slidesDown(),
+                                Sample_4
+                        ),
+                        new SequentialAction(
+                                elbow.lowerElbow(),
+                                claw.openClaw(),
+                                claw.closeClaw(),
+                                elbow.elbowUp(),
+                                Drop4,
+                                Slides.slidesUp(),
+                                MoveForward4,
+                                claw.closeClaw()
+                        ),
+                        new ParallelAction(
+                            Slides.holdSlides(),
+                            elbow.elbowUp(),
+                            claw.openClaw()
+                        ),
+                        goBack4
+
+
+
+
+                ));
 
     }
 }
