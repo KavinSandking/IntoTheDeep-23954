@@ -340,20 +340,24 @@ public class Auton extends LinearOpMode {
         Actions.runBlocking(
                 new SequentialAction(
                         new ParallelAction(
+
+                                // go to bucket and lift slides up
                                 Sample_1,
                                 Slides.slidesUp()
 
                         ),
-
+                        // put the elbow up
                         elbow.elbowUp(),
                         new ParallelAction(
+                                // hold the slides
                                 Slides.holdSlides(),
                                 elbow.elbowUp()
                         ),
-
+                        // open claw and go back
                         claw.openClaw(),
                         goBack,
                         new ParallelAction(
+                                // move the slides down and go to pick up sample 2
                                 Slides.slidesDown(),
                                 Sample_2
                         ),
