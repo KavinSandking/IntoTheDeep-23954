@@ -1,7 +1,5 @@
-package org.firstinspires.ftc.teamcode;
+package teleop;
 
-
-import android.transition.Slide;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -11,9 +9,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Config
 @TeleOp(name="BasicRobot2425")
@@ -56,6 +51,8 @@ public class BasicRobot2425 extends OpMode {
         Act1 = hardwareMap.dcMotor.get("Act1");
         Act2 = hardwareMap.dcMotor.get("Act2");
         elbow_2 = hardwareMap.servo.get("elbow_2");
+        Intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        Intake2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         Intake2 = hardwareMap.get(DcMotorEx.class, "Slides2");
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -122,6 +119,7 @@ public class BasicRobot2425 extends OpMode {
 
 
 
+
         // Toggle claw state when x is pressed
         if (gamepad2.x && !wasXPressed) {
             isClawOpen = !isClawOpen; // Toggle state
@@ -132,20 +130,43 @@ public class BasicRobot2425 extends OpMode {
             }
         }
 
-        if (gamepad2.b) {
-            elbow.setPosition(0.45); // Open position
+        if (gamepad2.b && !wasBPressed){
+            iselbowOpen = !iselbowOpen;
+            if (iselbowOpen){
+                elbow.setPosition(0.45);
+                elbow_2.setPosition(0.645);
+            } else {
+                elbow.setPosition(0.188);
+                elbow_2.setPosition(0.878);
+            }
         }
-        if (gamepad2.y) {
-            elbow.setPosition(0.188);
+        // 0.45, 0.645
+        if (gamepad2.y){
+            elbow.setPosition(0.5);
+            elbow_2.setPosition(0.45);
+        if (gamepad2.a){
+                // Set motors to RUN_TO_POSITION mode
+                Intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                Intake2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            // Open position
+                // Set target positions
+                Intake.setTargetPosition(-4200);
+                Intake2.setTargetPosition(-4200);
+
+                // Apply full power or a safe value
+                Intake.setPower(1.0);
+                Intake2.setPower(1.0);
+            }
+
+            // Add telemetry for debugging
+            telemetry.addData("Intake Position", Intake.getCurrentPosition());
+            telemetry.addData("Intake2 Position", Intake2.getCurrentPosition());
+            telemetry.addData("Intake Target", -4200);
+            telemetry.update();
         }
-        if (gamepad2.b) { // up position for elbow
-            elbow_2.setPosition(0.645); // Open position
-        }
-        if (gamepad2.y) {
-            elbow_2.setPosition(0.878); // Open position
-        }
+
+
+
 
         // Update wasXPressed state
         wasXPressed = gamepad2.x;
@@ -171,24 +192,5 @@ public class BasicRobot2425 extends OpMode {
         } else {
             Act2.setPower(0.0);
         }
-        if (gamepad2.dpad_up) {
-            isPidActive = true; // Activate PID control
-            target -= 1000;
-        }
-        if (isPidActive){
-
-        }
-        if (gamepad2.dpad_down){
-            isPidActive = false;
-
-            {
-
-            }
-
-
-
-        }
-
     }
-
 }
