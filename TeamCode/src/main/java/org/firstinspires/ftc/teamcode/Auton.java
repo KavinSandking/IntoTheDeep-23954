@@ -118,36 +118,36 @@ public class Auton extends LinearOpMode {
             }
         }
 
-    public class holdSlides implements Action {
-        private boolean initialized = false;
-        private long startTime;
+        public class holdSlides implements Action {
+            private boolean initialized = false;
+            private long startTime;
 
-        @Override
-        public boolean run(@NonNull TelemetryPacket packet) {
-            if (!initialized) {
-                Slides.setPower(0.1); // Small power to hold position
-                Slides2.setPower(0.1);
-                startTime = System.currentTimeMillis(); // Record start time
-                initialized = true;
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (!initialized) {
+                    Slides.setPower(0.1); // Small power to hold position
+                    Slides2.setPower(0.1);
+                    startTime = System.currentTimeMillis(); // Record start time
+                    initialized = true;
+                }
+
+                long elapsedTime = System.currentTimeMillis() - startTime;
+
+                packet.put("Slide Encoder 1", Slides.getCurrentPosition());
+                packet.put("Slide Encoder 2", Slides2.getCurrentPosition());
+                packet.put("Hold Time (ms)", elapsedTime);
+
+                // Run for 1 second (or adjust as needed for claw to open)
+                return elapsedTime < 500;
             }
-
-            long elapsedTime = System.currentTimeMillis() - startTime;
-
-            packet.put("Slide Encoder 1", Slides.getCurrentPosition());
-            packet.put("Slide Encoder 2", Slides2.getCurrentPosition());
-            packet.put("Hold Time (ms)", elapsedTime);
-
-            // Run for 1 second (or adjust as needed for claw to open)
-            return elapsedTime < 500;
         }
-    }
 
-    public Action holdSlides() {
-        return new holdSlides();
-    }
+        public Action holdSlides() {
+            return new holdSlides();
+        }
 
 
-    public Action slidesDown() {
+        public Action slidesDown() {
             return new slidesDown();
         }
     }
@@ -160,7 +160,31 @@ public class Auton extends LinearOpMode {
             elbow = hardwareMap.get(Servo.class, "elbow");
             elbow2 = hardwareMap.get(Servo.class, "elbow_2");
         }
+        public class elbowStraight implements Action {
+            private boolean initialized = false;
+            private long startTime;
 
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (!initialized) {
+                    elbow.setPosition(0.5);
+                    elbow2.setPosition(0.45);
+                    startTime = System.currentTimeMillis();
+                    initialized = true;
+                }
+
+                long elapsedTime = System.currentTimeMillis() - startTime;
+
+                if (elapsedTime >= 0) {
+                    return false;
+                }
+                return true;
+            }
+        }
+
+        public Action elbowStraight() {
+            return new elbowStraight();
+        }
         public class lowerElbow implements Action {
             private boolean initialized = false;
             private long startTime;
@@ -176,7 +200,7 @@ public class Auton extends LinearOpMode {
 
                 long elapsedTime = System.currentTimeMillis() - startTime;
 
-                if (elapsedTime >= 500) {
+                if (elapsedTime >= 250) {
                     return false;
                 }
                 return true;
@@ -202,7 +226,7 @@ public class Auton extends LinearOpMode {
 
                 long elapsedTime = System.currentTimeMillis() - startTime;
 
-                if (elapsedTime >= 1000) {
+                if (elapsedTime >= 250) {
                     return false;
                 }
                 return true;
@@ -235,7 +259,7 @@ public class Auton extends LinearOpMode {
 
                 long elapsedTime = System.currentTimeMillis() - startTime;
 
-                if (elapsedTime >= 500) {
+                if (elapsedTime >= 250) {
                     return false;
                 }
                 return true;
@@ -248,22 +272,14 @@ public class Auton extends LinearOpMode {
 
         public class OpenClaw implements Action {
             private boolean initialized = false;
-            private long startTime;
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
                     claw.setPosition(0.0);
-                    startTime = System.currentTimeMillis();
                     initialized = true;
                 }
-
-                long elapsedTime = System.currentTimeMillis() - startTime;
-
-                if (elapsedTime >= 500) {
-                    return false;
-                }
-                return true;
+                return false;
             }
         }
 
@@ -316,7 +332,7 @@ public class Auton extends LinearOpMode {
 
         //TODO Set up Velocity Constraints for certain trajectories
         //TrajectoryActionBuilder Velocity Constraints = Poop.endTrajectory().fresh()
-                //.splineTo(new Vector2d(69.0,69.0),Math.toRadians(69.0), new TranslationalVelConstraint(20.0));
+        //.splineTo(new Vector2d(69.0,69.0),Math.toRadians(69.0), new TranslationalVelConstraint(20.0));
 
 
         Action Sample_1 = Sample1.build();
@@ -340,14 +356,11 @@ public class Auton extends LinearOpMode {
         Actions.runBlocking(
                 new SequentialAction(
                         new ParallelAction(
-
-                                // go to bucket and lift slides up
+                                elbow.elbowStraight(),// go to bucket and lift slides up
                                 Sample_1,
                                 Slides.slidesUp()
-
                         ),
                         // put the elbow up
-                        elbow.elbowUp(),
                         new ParallelAction(
                                 // hold the slides
                                 Slides.holdSlides(),
@@ -361,14 +374,12 @@ public class Auton extends LinearOpMode {
                                 Slides.slidesDown(),
                                 Sample_2
                         ),
-                        WAIT,
                         new ParallelAction(
-                                elbow.lowerElbow(),
-                                claw.openClaw()
+                                elbow.lowerElbow()
                         ),
 
                         claw.closeClaw(),
-                        elbow.elbowUp(),
+                        elbow.elbowStraight(),
                         new SequentialAction(
                                 Drop2,
                                 Slides.slidesUp(),
@@ -389,9 +400,8 @@ public class Auton extends LinearOpMode {
                         ),
                         new SequentialAction(
                                 elbow.lowerElbow(),
-                                claw.openClaw(),
                                 claw.closeClaw(),
-                                elbow.elbowUp(),
+                                elbow.elbowStraight(),
                                 Drop3,
                                 Slides.slidesUp(),
                                 MoveForward3,
@@ -409,18 +419,17 @@ public class Auton extends LinearOpMode {
                         ),
                         new SequentialAction(
                                 elbow.lowerElbow(),
-                                claw.openClaw(),
                                 claw.closeClaw(),
-                                elbow.elbowUp(),
+                                elbow.elbowStraight(),
                                 Drop4,
                                 Slides.slidesUp(),
                                 MoveForward4,
                                 claw.closeClaw()
                         ),
                         new ParallelAction(
-                            Slides.holdSlides(),
-                            elbow.elbowUp(),
-                            claw.openClaw()
+                                Slides.holdSlides(),
+                                elbow.elbowUp(),
+                                claw.openClaw()
                         ),
                         goBack4
 
