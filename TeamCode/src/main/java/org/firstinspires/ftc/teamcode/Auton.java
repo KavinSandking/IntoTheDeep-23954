@@ -176,7 +176,7 @@ public class Auton extends LinearOpMode {
 
                 long elapsedTime = System.currentTimeMillis() - startTime;
 
-                if (elapsedTime >= 149){
+                if (elapsedTime >= 150){
                     return false;
                 }
                 return true;
