@@ -1,12 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.linearOpMode;
-
 import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
@@ -28,8 +25,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 
 @Config
-@Autonomous(name = "LM3AUTONBLUE", group = "Autonomous")
-public class Auton extends LinearOpMode {
+@Autonomous(name = "4SampleSecondary", group = "Autonomous")
+public class AutonSecondary extends LinearOpMode {
 
     public class Slides {
         private DcMotorEx Slides;
@@ -201,7 +198,7 @@ public class Auton extends LinearOpMode {
 
                 long elapsedTime = System.currentTimeMillis() - startTime;
 
-                if (elapsedTime >= 450) {
+                if (elapsedTime >= 550) {
                     return false;
                 }
                 return true;
@@ -219,15 +216,15 @@ public class Auton extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    elbow.setPosition(0.45);
-                    elbow2.setPosition(0.645);
+                    elbow.setPosition(0.5);
+                    elbow2.setPosition(0.6);
                     startTime = System.currentTimeMillis();
                     initialized = true;
                 }
 
                 long elapsedTime = System.currentTimeMillis() - startTime;
 
-                if (elapsedTime >= 350) {
+                if (elapsedTime >=750 ) {
                     return false;
                 }
                 return true;
@@ -253,7 +250,7 @@ public class Auton extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    claw.setPosition(1.0);
+                    claw.setPosition(0.0);
                     startTime = System.currentTimeMillis();
                     initialized = true;
                 }
@@ -278,16 +275,10 @@ public class Auton extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    claw.setPosition(0.0);
-                    startTime = System.currentTimeMillis();
+                    claw.setPosition(1.0);
                     initialized = true;
                 }
-                long elapsedTime = System.currentTimeMillis() - startTime;
-
-                if (elapsedTime >= 350) {
-                    return false;
-                }
-                return true;
+                return false;
             }
         }
 
@@ -305,19 +296,19 @@ public class Auton extends LinearOpMode {
         elbow elbow = new elbow(hardwareMap);
 
         TrajectoryActionBuilder Sample1 = drive.actionBuilder(initialPose)
-                .splineTo(new Vector2d(5.33, 23.78), Math.toRadians(133.98),new TranslationalVelConstraint(85));
+                .splineTo(new Vector2d(5.28, 21.87), Math.toRadians(136.04),new TranslationalVelConstraint(70));
         TrajectoryActionBuilder Sample2 = Sample1.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(22.98, 16.02), Math.toRadians(-0.57));
+                .strafeToLinearHeading(new Vector2d(21.76, 16.12), Math.toRadians(-0.28));
         TrajectoryActionBuilder DROP2 = Sample2.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(5.33, 23.78), Math.toRadians(133.98),new TranslationalVelConstraint(85));
+                .strafeToLinearHeading(new Vector2d(5.89, 23.78), Math.toRadians(130.64),new TranslationalVelConstraint(70));
         TrajectoryActionBuilder Sample3 = DROP2.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(22.81, 26.81), Math.toRadians(-1.29));
+                .strafeToLinearHeading(new Vector2d(22.42, 24.76), Math.toRadians(-0.8));
         TrajectoryActionBuilder DROP3 = Sample3.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(5.33, 23.78), Math.toRadians(133.98),new TranslationalVelConstraint(85));
+                .strafeToLinearHeading(new Vector2d(5.89, 23.78), Math.toRadians(130.64),new TranslationalVelConstraint(70));
         TrajectoryActionBuilder Sample4 = DROP3.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(24.81, 28.12), Math.toRadians(29.84));
+                .strafeToLinearHeading(new Vector2d(24.31, 25.82), Math.toRadians(27.46));
         TrajectoryActionBuilder DROP4 = Sample4.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(5.33, 23.78), Math.toRadians(133.98),new TranslationalVelConstraint(85));
+                .strafeToLinearHeading(new Vector2d(5.89, 23.78), Math.toRadians(130.64),new TranslationalVelConstraint(70));
         TrajectoryActionBuilder goBack = DROP4.endTrajectory().fresh()
                 .strafeToLinearHeading(new Vector2d(17.69, 17.68), Math.toRadians(143.1));
 
@@ -356,9 +347,12 @@ public class Auton extends LinearOpMode {
                                 // hold the slides
                                 Slides.holdSlides(),
                                 elbow.elbowUp()
+
                         ),
                         // open claw and go back
                         claw.openClaw(),
+                        new SleepAction(0.5),
+
                         elbow.elbowStraight(),
                         new ParallelAction(
                                 // move the slides down and go to pick up sample 2
@@ -374,10 +368,13 @@ public class Auton extends LinearOpMode {
                         ),
                         new ParallelAction(
                                 Slides.holdSlides(),
-                                elbow.elbowUp(),
-                                claw.openClaw()
+                                elbow.elbowUp()
+
+
                         ),
+
                         claw.openClaw(),
+                        new SleepAction(0.5),
                         elbow.elbowStraight(),
                         new ParallelAction(
                                 Slides.slidesDown(),
@@ -396,10 +393,14 @@ public class Auton extends LinearOpMode {
                         claw.closeClaw(),
                         new ParallelAction(
                                 Slides.holdSlides(),
-                                elbow.elbowUp(),
-                                claw.openClaw()
+                                elbow.elbowUp()
+
+
                         ),
+
                         claw.openClaw(),
+                        new SleepAction(0.5),
+
                         elbow.elbowStraight(),
                         new ParallelAction(
                                 Slides.slidesDown(),
@@ -417,10 +418,14 @@ public class Auton extends LinearOpMode {
                         claw.closeClaw(),
                         new ParallelAction(
                                 Slides.holdSlides(),
-                                elbow.elbowUp(),
-                                claw.openClaw()
+                                elbow.elbowUp()
+
+
                         ),
+
                         claw.openClaw(),
+                        new SleepAction(0.5),
+
                         elbow.elbowStraight(),
                         goBack4
 
