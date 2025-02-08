@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
 
-
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -10,17 +10,18 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.arcrobotics.ftclib.command.CommandBase;
 
 @Config
 @TeleOp(name="BasicRobot2425")
 public class BasicRobot2425 extends OpMode {
-    private DcMotorEx Intake2;
+    private DcMotorEx Intake2= null;
     DcMotor FrontLeft = null;
     DcMotor FrontRight = null;
     DcMotor BackLeft = null;
     DcMotor BackRight = null;
     Servo claw = null;
-    private DcMotorEx Intake;
+    private DcMotorEx Intake = null;
     DcMotor Act1 = null;
     DcMotor Act2= null;
     Servo elbow = null;
@@ -29,12 +30,13 @@ public class BasicRobot2425 extends OpMode {
     boolean wasXPressed = false; // Track if X was previously pressed
     boolean iselbowOpen = false;
     boolean wasBPressed = false; //toggle elbow when B pressed
-
+    private PIDController controller;
     public static double kp = 0.0007, ki = 0, kd = 0.0001;
     public static double kf = 0.001;
     public static double target = -4000;
     private final double encoderTicksInDegrees = 537.7;
     private boolean isPidActive = false;
+
 
 
 
@@ -46,21 +48,20 @@ public class BasicRobot2425 extends OpMode {
         FrontRight = hardwareMap.dcMotor.get("rightFront");
         BackLeft = hardwareMap.dcMotor.get("leftBack");
         BackRight = hardwareMap.dcMotor.get("rightBack");
-        Intake = hardwareMap.get(DcMotorEx.class,"Slides");
+        Intake = hardwareMap.get(DcMotorEx.class, "Slides");
         Intake2 = hardwareMap.get(DcMotorEx.class, "Slides2");
         claw = hardwareMap.servo.get("claw");
         elbow = hardwareMap.servo.get("elbow");
+        elbow_2 = hardwareMap.servo.get("elbow_2");
         Act1 = hardwareMap.dcMotor.get("Act1");
         Act2 = hardwareMap.dcMotor.get("Act2");
-        elbow_2 = hardwareMap.servo.get("elbow_2");
-        Intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        Intake2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-
-
+        controller = new PIDController(kp, ki, kd);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-    }
 
+
+
+    }
 
 
 
@@ -88,14 +89,22 @@ public class BasicRobot2425 extends OpMode {
         }
 
 
-        if (gamepad1.left_stick_y!=0.0){
-            FrontLeft.setPower(-gamepad1.left_stick_y);
-            BackLeft.setPower(-gamepad1.left_stick_y);
-        }
-        if (gamepad1.right_stick_y!=0.0){
-            FrontRight.setPower(-gamepad1.right_stick_y);
-            BackRight.setPower(-gamepad1.right_stick_y);
-        }
+        double y = -gamepad1.left_stick_y; // Remember, Y stick is reversed!
+        double x = gamepad1.left_stick_x * 1.1;
+        double rx = gamepad1.right_stick_x;
+
+        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+        double FrontLeftPower = (y + x + rx) / denominator;
+        double BackLeftPower = (y - x + rx) / denominator;
+        double FrontRightPower = (y - x - rx) / denominator;
+        double BackRightPower = (y + x - rx) / denominator;
+
+        FrontLeft.setPower(FrontLeftPower);
+        FrontRight.setPower(FrontRightPower);
+        BackRight.setPower(BackRightPower);
+        BackLeft.setPower(BackLeftPower);
+
+
         if (gamepad1.right_bumper) {
             FrontLeft.setPower(0.75);
             BackLeft.setPower(-0.75);
@@ -109,16 +118,27 @@ public class BasicRobot2425 extends OpMode {
 
         }
         if (gamepad2.right_stick_y == 1.0) {
-            Intake.setVelocity(-2300);
-            Intake2.setVelocity(-2300);
+            Intake.setPower(1);
+            Intake2.setPower(0.82);
         } else if (gamepad2.right_stick_y == -1.0) {
-            Intake.setVelocity(2300);
-            Intake2.setVelocity(2300);
+            Intake.setPower(-1.0);
+            Intake2.setPower(-0.82);
         } else if(gamepad2.right_stick_y == 0.0) {
-            Intake.setVelocity(0);
-            Intake2.setVelocity(0);
+            Intake.setPower(0.0);
+            Intake2.setPower(0.0);// Stop when the stick is not in use
         }
 
+        if (gamepad2.dpad_up){
+            isPidActive = true;
+        }
+        if (isPidActive) {
+            pidf();
+        }
+        if (gamepad2.dpad_down){
+            isPidActive = false;
+            Intake.setPower(0);
+            Intake2.setPower(0);
+        }
 
 
 
@@ -127,9 +147,9 @@ public class BasicRobot2425 extends OpMode {
         if (gamepad2.x && !wasXPressed) {
             isClawOpen = !isClawOpen; // Toggle state
             if (isClawOpen) {
-                claw.setPosition(1.0); // Close Position
+                claw.setPosition(0.0); // Close Position
             } else {
-                claw.setPosition(0.0); // Open position
+                claw.setPosition(1.0); // Open position
             }
         }
 
@@ -147,11 +167,9 @@ public class BasicRobot2425 extends OpMode {
         if (gamepad2.y) {
             elbow.setPosition(0.5);
             elbow_2.setPosition(0.45);
-        }
-
 
             // Add telemetry for debugging
-
+        }
 
 
 
@@ -179,5 +197,20 @@ public class BasicRobot2425 extends OpMode {
         } else {
             Act2.setPower(0.0);
         }
+    }
+    public void pidf(){
+        controller.setPID(kp,ki,kd);
+        int SlidesPos = (Intake.getCurrentPosition() + Intake2.getCurrentPosition())/2;
+
+        double pid = controller.calculate(SlidesPos, target);
+        double ff = kf;
+
+        double power = pid + ff;
+        Intake.setPower(power);
+        Intake2.setPower(power);
+
+        telemetry.addData("SlidesPos", SlidesPos);
+        telemetry.addData("target", target);
+
     }
 }

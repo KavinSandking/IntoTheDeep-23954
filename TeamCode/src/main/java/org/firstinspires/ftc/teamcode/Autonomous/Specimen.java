@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Autonomous;
 
 import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.config.Config;
@@ -6,9 +6,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
-import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
-import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ParallelAction;
 
@@ -22,11 +20,12 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 
 @Config
-@Autonomous(name = "4SampleSecondary", group = "Autonomous")
-public class AutonSecondary extends LinearOpMode {
+@Autonomous(name = "Specimen", group = "Autonomous")
+public class Specimen extends LinearOpMode {
 
     public class Slides {
         private DcMotorEx Slides;
@@ -44,7 +43,42 @@ public class AutonSecondary extends LinearOpMode {
             Slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             Slides2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
+        public class SlidesPartial implements Action {
+            private boolean initialized = false;
 
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (!initialized) {
+
+                    Slides.setTargetPosition(590);
+                    Slides2.setTargetPosition(590);
+
+                    Slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    Slides2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    Slides.setPower(1.0);
+                    Slides2.setPower(1.0);
+
+                    initialized = true;
+                }
+
+                packet.put("Slide Encoder 1", Slides.getCurrentPosition());
+                packet.put("Slide Encoder 2", Slides2.getCurrentPosition());
+                telemetry.addData("Slide Encoder 1", Slides.getCurrentPosition());
+                telemetry.addData("Slide Encoder 2", Slides2.getCurrentPosition());
+                telemetry.update();
+
+                if (!Slides.isBusy() && !Slides2.isBusy()) {
+                    Slides.setPower(0);
+                    Slides2.setPower(0);
+                    return false;
+                }
+                return true;
+            }
+        }
+        public Action SlidesPartial() {
+            return new SlidesPartial();
+        }
         public class slidesUp implements Action {
             private boolean initialized = false;
 
@@ -52,8 +86,8 @@ public class AutonSecondary extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
 
-                    Slides.setTargetPosition(4050);
-                    Slides2.setTargetPosition(4050);
+                    Slides.setTargetPosition(1100);
+                    Slides2.setTargetPosition(1100);
 
                     Slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     Slides2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -198,7 +232,7 @@ public class AutonSecondary extends LinearOpMode {
 
                 long elapsedTime = System.currentTimeMillis() - startTime;
 
-                if (elapsedTime >= 550) {
+                if (elapsedTime >= 450) {
                     return false;
                 }
                 return true;
@@ -216,15 +250,15 @@ public class AutonSecondary extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    elbow.setPosition(0.5);
-                    elbow2.setPosition(0.6);
+                    elbow.setPosition(0.45);
+                    elbow2.setPosition(0.645);
                     startTime = System.currentTimeMillis();
                     initialized = true;
                 }
 
                 long elapsedTime = System.currentTimeMillis() - startTime;
 
-                if (elapsedTime >=750 ) {
+                if (elapsedTime >= 350) {
                     return false;
                 }
                 return true;
@@ -244,17 +278,16 @@ public class AutonSecondary extends LinearOpMode {
         }
 
         public class CloseClaw implements Action {
-            private boolean initialized = false;
             private long startTime;
+            private boolean initialized = false;
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    claw.setPosition(0.0);
+                    claw.setPosition(1.0);
                     startTime = System.currentTimeMillis();
                     initialized = true;
                 }
-
                 long elapsedTime = System.currentTimeMillis() - startTime;
 
                 if (elapsedTime >= 350) {
@@ -275,10 +308,16 @@ public class AutonSecondary extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    claw.setPosition(1.0);
+                    claw.setPosition(0.0);
+                    startTime = System.currentTimeMillis();
                     initialized = true;
                 }
-                return false;
+                long elapsedTime = System.currentTimeMillis() - startTime;
+
+                if (elapsedTime >= 350) {
+                    return false;
+                }
+                return true;
             }
         }
 
@@ -295,22 +334,15 @@ public class AutonSecondary extends LinearOpMode {
         Slides Slides = new Slides(hardwareMap);
         elbow elbow = new elbow(hardwareMap);
 
-        TrajectoryActionBuilder Sample1 = drive.actionBuilder(initialPose)
-                .splineTo(new Vector2d(5.28, 21.87), Math.toRadians(136.04),new TranslationalVelConstraint(70));
-        TrajectoryActionBuilder Sample2 = Sample1.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(21.76, 16.12), Math.toRadians(-0.28));
-        TrajectoryActionBuilder DROP2 = Sample2.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(5.89, 23.78), Math.toRadians(130.64),new TranslationalVelConstraint(70));
-        TrajectoryActionBuilder Sample3 = DROP2.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(22.42, 24.76), Math.toRadians(-0.8));
-        TrajectoryActionBuilder DROP3 = Sample3.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(5.89, 23.78), Math.toRadians(130.64),new TranslationalVelConstraint(70));
-        TrajectoryActionBuilder Sample4 = DROP3.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(24.31, 25.82), Math.toRadians(27.46));
-        TrajectoryActionBuilder DROP4 = Sample4.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(5.89, 23.78), Math.toRadians(130.64),new TranslationalVelConstraint(70));
-        TrajectoryActionBuilder goBack = DROP4.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(17.69, 17.68), Math.toRadians(143.1));
+        TrajectoryActionBuilder PRELOAD = drive.actionBuilder(initialPose)
+                .strafeToLinearHeading(new Vector2d(31.43, 12.76), Math.toRadians(0.53));
+        TrajectoryActionBuilder PARK = PRELOAD.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(3.34, -49.19), Math.toRadians(-2.11));
+
+
+        Action Preload = PRELOAD.build();
+        Action Park= PARK.build();
+
 
 
 
@@ -321,15 +353,6 @@ public class AutonSecondary extends LinearOpMode {
         //.splineTo(new Vector2d(69.0,69.0),Math.toRadians(69.0), new TranslationalVelConstraint(20.0));
 
 
-        Action Sample_1 = Sample1.build();
-        Action Sample_2 = Sample2.build();
-        Action Drop2 = DROP2.build();
-        Action Sample_3 = Sample3.build();
-        Action Drop3 = DROP3.build();
-        Action Sample_4  = Sample4.build();
-        Action Drop4 = DROP4.build();
-        Action goBack4 = goBack.build();
-
 
         waitForStart();
 
@@ -337,99 +360,16 @@ public class AutonSecondary extends LinearOpMode {
         Actions.runBlocking(
                 new SequentialAction(
                         new ParallelAction(
-                                elbow.elbowStraight(),// go to bucket and lift slides up
-                                Sample_1,
-                                Slides.slidesUp()
-
+                                Preload,
+                                Slides.slidesUp(),
+                                claw.closeClaw()
                         ),
-                        // put the elbow up
-                        new ParallelAction(
-                                // hold the slides
-                                Slides.holdSlides(),
-                                elbow.elbowUp()
-
-                        ),
-                        // open claw and go back
-                        claw.openClaw(),
-                        new SleepAction(0.5),
-
-                        elbow.elbowStraight(),
-                        new ParallelAction(
-                                // move the slides down and go to pick up sample 2
-                                Slides.slidesDown(),
-                                Sample_2
-                        ),
-                        elbow.lowerElbow(),
-                        claw.closeClaw(),
-                        elbow.elbowStraight(),
-                        new ParallelAction(
-                                Drop2,
-                                Slides.slidesUp()
-                        ),
-                        new ParallelAction(
-                                Slides.holdSlides(),
-                                elbow.elbowUp()
+                        Slides.SlidesPartial()
 
 
-                        ),
+                )
 
-                        claw.openClaw(),
-                        new SleepAction(0.5),
-                        elbow.elbowStraight(),
-                        new ParallelAction(
-                                Slides.slidesDown(),
-                                Sample_3
-                        ),
-                        new SequentialAction(
-                                elbow.lowerElbow(),
-                                claw.closeClaw(),
-                                elbow.elbowStraight()
-                        ),
-                        new ParallelAction(
-                                Drop3,
-                                Slides.slidesUp()
-                        ),
-
-                        claw.closeClaw(),
-                        new ParallelAction(
-                                Slides.holdSlides(),
-                                elbow.elbowUp()
-
-
-                        ),
-
-                        claw.openClaw(),
-                        new SleepAction(0.5),
-
-                        elbow.elbowStraight(),
-                        new ParallelAction(
-                                Slides.slidesDown(),
-                                Sample_4
-                        ),
-                        new SequentialAction(
-                                elbow.lowerElbow(),
-                                claw.closeClaw(),
-                                elbow.elbowStraight()
-                        ),
-                        new ParallelAction(
-                                Drop4,
-                                Slides.slidesUp()
-                        ),
-                        claw.closeClaw(),
-                        new ParallelAction(
-                                Slides.holdSlides(),
-                                elbow.elbowUp()
-
-
-                        ),
-
-                        claw.openClaw(),
-                        new SleepAction(0.5),
-
-                        elbow.elbowStraight(),
-                        goBack4
-
-                ));
+        );
 
     }
 }
