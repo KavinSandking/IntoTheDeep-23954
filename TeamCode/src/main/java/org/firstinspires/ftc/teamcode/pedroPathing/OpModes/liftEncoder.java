@@ -16,8 +16,13 @@ class liftEncoder extends NextFTCOpMode {
 
     @Override
     public void onInit() {}
+
+    @Override
+    public void onUpdate(){
+        telemetry.addData("Slides", Slides.INSTANCE.getCurrentPosition());
+    }
     @Override
     public void onStartButtonPressed() {
-
+        Slides.INSTANCE.manualControl(gamepadManager.getGamepad2().getLeftStick().getY());
     }
 }

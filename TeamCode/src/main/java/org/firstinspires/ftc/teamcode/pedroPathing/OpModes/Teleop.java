@@ -35,13 +35,12 @@ class Teleop extends NextFTCOpMode {
 
     public MotorEx[] driveTrain;
     public Command driverControlled;
+    double Delay = 0.5;
 
     public Command dropSample() {
         return new SequentialGroup(
-                Slides.INSTANCE.slidesUp(),
-                Elbows.INSTANCE.elbowUp(),
-                new Delay(0.5),
                 Claw.INSTANCE.open(),
+                new Delay(Delay),
                 Elbows.INSTANCE.elbowStraight()
         );
     }

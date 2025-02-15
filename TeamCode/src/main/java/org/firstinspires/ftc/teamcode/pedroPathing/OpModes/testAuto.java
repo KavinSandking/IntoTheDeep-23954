@@ -27,7 +27,7 @@ public class testAuto extends PedroOpMode {
     public testAuto(){
         super(Slides.INSTANCE, Claw.INSTANCE, Elbows.INSTANCE);
     }
-    private Follower follower;
+
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
 
@@ -38,37 +38,22 @@ public class testAuto extends PedroOpMode {
     private final Pose scorePose2 = new Pose(13,130, Math.toRadians(135));
 
     private PathBuilder scorePreload, sample2, scoreSample2;
+
     
 
     public void buildPaths() {
 
         scorePreload = follower.pathBuilder()
-                .addPath(
-                        // go to highBasket
-                        new BezierLine(
-                                new Point(startPose),
-                                new Point(scorePose)
-                        )
-                )
+                .addPath(new BezierLine(startPose, scorePose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
 
         sample2 = follower.pathBuilder()
-                .addPath(
-                        new BezierLine(
-                                new Point(scorePose),
-                                new Point(pickUpSample2)
-                        )
-                )
+                .addPath(new BezierLine(scorePose, pickUpSample2))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickUpSample2.getHeading());
-        scoreSample2 = follower.pathBuilder()
-                .addPath(
-                        new BezierLine(
-                                new Point(pickUpSample2),
-                                new Point(scorePose2)
-                        )
-                )
-                .setLinearHeadingInterpolation(pickUpSample2.getHeading(), scorePose2.getHeading());
 
+        scoreSample2 = follower.pathBuilder()
+                .addPath(new BezierLine(pickUpSample2, scorePose2))
+                .setLinearHeadingInterpolation(pickUpSample2.getHeading(), scorePose2.getHeading());
 
     }
 
@@ -81,10 +66,8 @@ public class testAuto extends PedroOpMode {
     @Override
     public void onUpdate() {
 
-        // These loop the movements of the robot
         follower.update();
 
-        // Feedback to Driver Hub
         telemetry.addData("path state", pathState);
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
@@ -104,7 +87,6 @@ public class testAuto extends PedroOpMode {
         buildPaths();
     }
 
-    /** This method is called continuously after Init while waiting for "play". **/
     @Override
     public void waitForStart(){}
 
@@ -131,8 +113,6 @@ public class testAuto extends PedroOpMode {
                         new FollowPath(scoreSample2.build(),true),
                         Slides.INSTANCE.slidesUp()
                 )
-
-
         ));
     }
 
