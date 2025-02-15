@@ -10,31 +10,30 @@ import com.rowanmcalpin.nextftc.ftc.hardware.ServoToPosition;
 
 public class Claw extends Subsystem {
 
+    public enum States {
+        OPEN,
+        CLOSE
+    }
+
     public static final Claw INSTANCE = new Claw();
     private Claw(){}
 
     public Servo Claw;
     public String name = "claw";
 
-    public String state;
+   private States state = States.CLOSE;
 
     public Command open() {
-        return new InstantCommand(() -> {
-            state = "open";
-            new ServoToPosition(Claw, 1.0, this).invoke();
-            return null;
-        });
+        state = States.OPEN;
+        return new ServoToPosition(Claw, 1.0, this);
     }
     public Command close(){
-        return new InstantCommand(() ->{
-            state = "closed";
-            new ServoToPosition(Claw, 0.0, this).invoke();
-            return null;
-        });
+        state = States.CLOSE;
+        return new ServoToPosition(Claw, 0.0, this);
     }
 
     public Command toggle(){
-        if(state.equals("open")){
+        if (state == States.OPEN){
             return close();
         }else{
             return open();

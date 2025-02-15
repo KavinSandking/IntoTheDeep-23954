@@ -11,6 +11,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Elbows extends Subsystem {
+    public enum States {
+        ELBOWUP,
+        ELBOWDOWN,
+        ELBOWSTART,
+
+    }
 
     public static final Elbows INSTANCE = new Elbows();
     private Elbows(){}
@@ -20,28 +26,21 @@ public class Elbows extends Subsystem {
     public String name = "elbow";
     public String name2 = "elbow_2";
 
-    public String state;
-
+    private States elbowState = States.ELBOWUP;
     public Command elbowUp(){
-        return new InstantCommand(() ->{
-            state = "elbowUp";
-            Map<Servo, Double> servoPositions = new HashMap<>();
-            servoPositions.put(Elbow, 0.45);
-            servoPositions.put(Elbow2, 0.645);
-            new MultipleServosToSeperatePositions(servoPositions, this);
-            return null;
-        });
+        elbowState = States.ELBOWUP;
+        Map<Servo, Double> servoPositions = new HashMap<>();
+        servoPositions.put(Elbow, 0.45);
+        servoPositions.put(Elbow2, 0.645);
+        return new MultipleServosToSeperatePositions(servoPositions, this);
     }
 
     public Command elbowDown(){
-        return new InstantCommand(() -> {
-            state = "elbowDown";
-            Map<Servo, Double> servoPositions = new HashMap<>();
-            servoPositions.put(Elbow, 0.188);
-            servoPositions.put(Elbow2, 0.878);
-            new MultipleServosToSeperatePositions(servoPositions, this);
-            return null;
-        });
+        elbowState = States.ELBOWDOWN;
+        Map<Servo, Double> servoPositions = new HashMap<>();
+        servoPositions.put(Elbow, 0.188);
+        servoPositions.put(Elbow2, 0.878);
+        return new MultipleServosToSeperatePositions(servoPositions, this);
     }
 
     public Command elbowStraight(){
@@ -51,7 +50,7 @@ public class Elbows extends Subsystem {
         return new MultipleServosToSeperatePositions(servoPositions, this);
     }
     public Command toggle(){
-        if(state.equals("elbowUp")){
+        if (elbowState == States.ELBOWUP){
             return elbowDown();
         }else{
             return elbowUp();
