@@ -105,22 +105,22 @@ public class BasicRobot2526 extends OpMode {
         if (gamepad1.right_bumper) {
             FrontLeft.setPower(0.75);
             BackLeft.setPower(-0.75);
-            FrontRight.setPower(-0.75);
-            BackRight.setPower(0.75);
+            FrontRight.setPower(0.75);
+            BackRight.setPower(-0.75);
         } else if (gamepad1.left_bumper) {
             FrontLeft.setPower(-0.75);
             BackLeft.setPower(0.75);
-            FrontRight.setPower(0.75);
-            BackRight.setPower(-0.75);
+            FrontRight.setPower(-0.75);
+            BackRight.setPower(0.75);
 
         }
 
         if (gamepad2.right_stick_y == 1.0) {
-            Intake.setPower(1);
-            Intake2.setPower(0.82);
-        } else if (gamepad2.right_stick_y == -1.0) {
-            Intake.setPower(-1.0);
+            Intake.setPower(-1);
             Intake2.setPower(-0.82);
+        } else if (gamepad2.right_stick_y == -1.0) {
+            Intake.setPower(1.0);
+            Intake2.setPower(0.82);
         } else if(gamepad2.right_stick_y == 0.0) {
             Intake.setPower(0.0);
             Intake2.setPower(0.0);// Stop when the stick is not in use
