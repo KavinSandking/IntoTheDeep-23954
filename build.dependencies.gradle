@@ -19,9 +19,9 @@ dependencies {
     implementation 'org.firstinspires.ftc:Vision:10.2.0'
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.pedropathing:beta:1.0.8-beta3'
-    implementation 'com.rowanmcalpin.nextftc:core:0.6.0'
-    implementation 'com.rowanmcalpin.nextftc:ftc:0.6.0'
-    implementation 'com.rowanmcalpin.nextftc:pedro:0.6.0'
+    implementation 'com.rowanmcalpin.nextftc:core:0.6.1'
+    implementation 'com.rowanmcalpin.nextftc:ftc:0.6.1'
+    implementation 'com.rowanmcalpin.nextftc:pedro:0.6.1'
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.0"))
 }
 
