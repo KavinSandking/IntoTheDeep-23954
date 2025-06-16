@@ -32,7 +32,9 @@ public class teleop extends NextFTCOpMode {
     public MotorEx leftBack;
     public MotorEx rightBack;
     public Command driverControlled;
-    public MotorEx[] motors;
+    public MotorGroup leftMotors;
+    public MotorGroup rightMotors;
+
 
     boolean isClawOpen = false;
     boolean isElbowUp = false;
@@ -50,15 +52,28 @@ public class teleop extends NextFTCOpMode {
         rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
         rightBack.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        motors = new MotorEx[] {leftFront, leftBack, rightFront, rightBack};
+        leftMotors = new MotorGroup(leftFront, leftBack);
+        rightMotors = new MotorGroup(rightFront, rightBack);
 
 
     }
 
     @Override
     public void onStartButtonPressed(){
-        driverControlled = new MecanumDriverControlled(motors, gamepadManager.getGamepad1());
+        driverControlled = new DifferentialTankDriverControlled(leftMotors, rightMotors, gamepadManager.getGamepad1());
         driverControlled.invoke();
+
+        if (gamepad1.right_bumper) {
+            leftFront.setPower(0.75);
+            leftBack.setPower(-0.75);
+            rightFront.setPower(0.75);
+            rightBack.setPower(-0.75);
+        } else if (gamepad1.left_bumper) {
+            leftFront.setPower(-0.75);
+            leftBack.setPower(0.75);
+            rightFront.setPower(-0.75);
+            rightBack.setPower(0.75);
+        }
 
         setGamePad2Commands();
     }
@@ -104,7 +119,19 @@ public class teleop extends NextFTCOpMode {
 
     }
     @Override
-    public void onUpdate(){}
+    public void onUpdate(){
+        if (gamepad1.right_bumper) {
+            leftFront.setPower(0.75);
+            leftBack.setPower(-0.75);
+            rightFront.setPower(0.75);
+            rightBack.setPower(-0.75);
+        } else if (gamepad1.left_bumper) {
+            leftFront.setPower(-0.75);
+            leftBack.setPower(0.75);
+            rightFront.setPower(-0.75);
+            rightBack.setPower(0.75);
+        }
+    }
 
 
 }
