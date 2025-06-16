@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.roadrunner.NextFTC.OpModes.subsystems.*;
 public class teleop extends NextFTCOpMode {
 
     public teleop() {
-        super(Claw.INSTANCE, Elbows.INSTANCE, Slides.INSTANCE);
+        super(Claw.INSTANCE, Elbows.INSTANCE, Slides.INSTANCE, Actuators.INSTANCE);
     }
 
     public String frontLeftName = "leftFront";
@@ -78,6 +78,8 @@ public class teleop extends NextFTCOpMode {
         setGamePad2Commands();
     }
     public void setGamePad2Commands(){
+
+        //Claw Toggle
         gamepadManager.getGamepad2().getX().setPressedCommand(() ->
                 new SequentialGroup(
                         new InstantCommand(() -> {
@@ -91,6 +93,7 @@ public class teleop extends NextFTCOpMode {
                 )
         );
 
+        //Elbow Toggle
         gamepadManager.getGamepad2().getB().setPressedCommand(() ->
                 new SequentialGroup(
                         new InstantCommand(() -> {
@@ -103,7 +106,7 @@ public class teleop extends NextFTCOpMode {
                         )
 
                 ));
-
+        //Slides Commands
         gamepadManager.getGamepad2().getDpadUp().setPressedCommand(Slides.INSTANCE::slidesUp);
         gamepadManager.getGamepad2().getDpadDown().setPressedCommand(Slides.INSTANCE::slidesDown);
 
@@ -113,6 +116,20 @@ public class teleop extends NextFTCOpMode {
                         Elbows.INSTANCE.elbowUp(),
                         Claw.INSTANCE.openClawCommand()
                 )
+        );
+
+        //Actuator Commands
+        gamepadManager.getGamepad1().getLeftTrigger().setPressedCommand(
+                value -> Actuators.INSTANCE.actuatorsDown()
+        );
+        gamepadManager.getGamepad1().getLeftTrigger().setReleasedCommand(
+                value  -> Actuators.INSTANCE.actuatorsStop()
+        );
+        gamepadManager.getGamepad1().getRightTrigger().setPressedCommand(
+                value -> Actuators.INSTANCE.actuatorsUp()
+        );
+        gamepadManager.getGamepad1().getRightTrigger().setReleasedCommand(
+                value  -> Actuators.INSTANCE.actuatorsStop()
         );
 
 
