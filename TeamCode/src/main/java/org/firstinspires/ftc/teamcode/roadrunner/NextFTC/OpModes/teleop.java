@@ -148,6 +148,19 @@ public class teleop extends NextFTCOpMode {
             rightFront.setPower(-0.75);
             rightBack.setPower(0.75);
         }
+
+        if(gamepad1.a){
+           leftFront.setPower(-0.3);
+           leftBack.setPower(-0.3);
+           rightFront.setPower(-0.3);
+           rightBack.setPower(-0.3);
+        }
+        if(gamepad1.y){
+            leftFront.setPower(0.3);
+            leftBack.setPower(0.3);
+            rightFront.setPower(0.3);
+            rightBack.setPower(0.3);
+        }
     }
 
 

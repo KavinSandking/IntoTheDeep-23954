@@ -16,6 +16,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 
 
 @Config
+@Disabled
 @TeleOp(name="BasicRobot2526")
 public class BasicRobot2526 extends OpMode {
     private DcMotorEx Intake2= null;
